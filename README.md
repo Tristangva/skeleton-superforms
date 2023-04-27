@@ -4,6 +4,8 @@ Everything you need to build a Svelte project, powered by [`create-svelte`](http
 
 This is a combination of [Skeleton-UI](https://www.skeleton.dev/) and [SuperForms](https://superforms.vercel.app/) to create a basic notes app using Skeleton as the UI and Superforms for validate the created note
 
+
+Inspired by https://github.com/huntabyte/noted-skeletonui
 ## Developing
 
 Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:

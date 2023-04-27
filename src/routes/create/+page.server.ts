@@ -3,6 +3,7 @@ import { superValidate } from 'sveltekit-superforms/server';
 import { fail } from '@sveltejs/kit';
 
 const schema = z.object({
+  id: z.string().uuid(),
   name: z.string().default('Hello world!'),
   email: z.string().email(),
   content: z.string().min(1)

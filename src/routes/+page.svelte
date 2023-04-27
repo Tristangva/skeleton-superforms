@@ -1,1 +1,1 @@
-<h4>New Note</h4>
+<h4><a href="/create">New Note</a></h4>
