@@ -1,39 +1,27 @@
 <script lang="ts">
     import type { PageData } from './$types';
+    import { page } from '$app/stores';
     import { superForm } from 'sveltekit-superforms/client';
     import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
     import { noteStore } from '../../libs/stores';
     import { goto } from '$app/navigation';
 
-
     export let data: PageData;
 
     // Client API:
-    const { form, errors, constraints } = superForm(data.form);
+    const { form, errors, constraints, enhance, delayed, message, empty } =superForm(data.form);
 
-    let content: string;
-    let email: string;
-    let name: string;
-
-    function createNote(): void {
-        noteStore.update((notes) => [
-            ...notes, {
-                id: crypto.randomUUID(),
-                name,
-                email,
-                content
-            }
-        ])
-        name = ''
-        email = ''
-        content = ''
-        // goto('/')
-    }
 </script>
 
 <SuperDebug data={$form} />
 
-<form method="POST">
+{#if $message}
+    <h3 class:invalid={$page.status >= 400}>{$message}</h3>
+{/if}
+
+<form method="POST" use:enhance>
+    <input type="hidden" name="id" bind:value={$form.id} />
+
     <label for="name">Name
         <input class="input" type="text" name="name" bind:value={$form.name} data-invalid={$errors.name} {...$constraints.name}/>
         {#if $errors.name}<span class="invalid">{$errors.name}</span>{/if}
@@ -50,8 +38,15 @@
     </label>
     
 
-    <div><button on:click={createNote}>Create Note</button></div>
+    <div><button >Create Note</button></div>
 </form>
+
+<h3>Notes</h3>
+<div>
+  {#each data.notes as note}
+    <a href="?id={note.id}">{note.id}<br>{note.name} <br>{note.email}<br>{note.content}<br><br></a>
+  {/each}
+</div>
 
 <style>
     .invalid {

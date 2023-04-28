@@ -1,13 +1,24 @@
 import { z } from 'zod';
-import { superValidate } from 'sveltekit-superforms/server';
-import { fail } from '@sveltejs/kit';
+import { message, superValidate } from 'sveltekit-superforms/server';
+import { error, fail } from '@sveltejs/kit';
+import { noteSchema, notes } from '../../libs/types/note.js';
+import type { Actions, PageServerLoad } from './$types';
 
-const schema = z.object({
-  id: z.string().uuid(),
-  name: z.string().default('Hello world!'),
-  email: z.string().email(),
-  content: z.string().min(1)
-});
+const schema = noteSchema.extend({
+  id: noteSchema.shape.id.optional()
+})
+
+export const load = (async ({ url }) => {
+  // READ user
+  // For simplicity, use the id query parameter instead of a route.
+  const id = url.searchParams.get('id');
+  const note = id ? notes.find((n) => n.id == id) : null;
+
+  if (id && !note) throw error(404, 'User not found.');
+
+  const form = await superValidate(note, schema);
+  return { form, notes };
+})
 
 export const actions = {
   default: async ({ request }) => {
@@ -20,9 +31,21 @@ export const actions = {
       return fail(400, { form });
     }
 
-    // TODO: Do something with the validated data
+    if (!form.data.id) {
+      // CREATE user
+      const note = { ...form.data, id: crypto.randomUUID() };
+      notes.push(note)
 
-    // Yep, return { form } here too
-    return { form };
+      return message(form, 'User created!');
+    } else {
+      const note = notes.find((n) => n.id === form.data.id)
+
+      if(!note) throw error(404, 'Note not found.');
+
+      notes[notes.indexOf(note)] = { ...form.data, id: note.id}
+
+      return message(form, 'Note updated!');
+    }
+
   }
 }

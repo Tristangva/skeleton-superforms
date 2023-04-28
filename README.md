@@ -10,6 +10,9 @@ Inspired by https://github.com/huntabyte/noted-skeletonui
 
 Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
+
+I specifically used https://superforms.vercel.app/crud
+
 ```bash
 npm run dev
 
