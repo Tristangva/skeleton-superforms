@@ -1,8 +1,7 @@
 import { z } from 'zod';
 import { message, superValidate } from 'sveltekit-superforms/server';
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { noteSchema, notes } from '../../libs/types/note.js';
-import type { Actions, PageServerLoad } from './$types';
 
 const schema = noteSchema.extend({
   id: noteSchema.shape.id.optional()
@@ -22,29 +21,41 @@ export const load = (async ({ url }) => {
 
 export const actions = {
   default: async ({ request }) => {
-    const form = await superValidate(request, schema);
+    const data = await request.formData();
+    console.log(data)
+    const form = await superValidate(data, schema);
     console.log('POST', form);
 
     // Convenient validation check:
     if (!form.valid) {
       // Again, always return { form } and things will just work.
+      console.log("error")
       return fail(400, { form });
     }
 
     if (!form.data.id) {
       // CREATE user
       const note = { ...form.data, id: crypto.randomUUID() };
+      console.log("note: ", note)
       notes.push(note)
 
       return message(form, 'User created!');
     } else {
       const note = notes.find((n) => n.id === form.data.id)
-
       if(!note) throw error(404, 'Note not found.');
 
-      notes[notes.indexOf(note)] = { ...form.data, id: note.id}
+      //const index = notes.indexOf(note);
 
-      return message(form, 'Note updated!');
+      if (data.has('delete')) {
+        // DELETE user
+        notes.splice(notes.indexOf(note), 1);
+        throw redirect(303, '');
+      } else {
+
+        notes[notes.indexOf(note)] = { ...form.data, id: note.id}
+
+        return message(form, 'Note updated!');
+      }
     }
 
   }

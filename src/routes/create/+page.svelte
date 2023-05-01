@@ -9,7 +9,25 @@
     export let data: PageData;
 
     // Client API:
-    const { form, errors, constraints, enhance, delayed, message, empty } =superForm(data.form);
+    const {
+        form,
+        errors,
+        enhance,
+        delayed,
+        message,
+        reset,
+        empty,
+        constraints
+    } = superForm(data.form, {
+        onUpdated({form}) {
+        // Need to do this because messages can't be preserved on redirect.
+        // sveltekit-flash-message fixes this issue: 
+        // https://github.com/ciscoheat/sveltekit-flash-message
+        if (form.valid && data.form.empty) {
+            reset({keepMessage: true});
+        }
+        }
+  });
 
 </script>
 
@@ -39,6 +57,15 @@
     
 
     <div><button >Create Note</button></div>
+    {#if $delayed}Working...{/if}
+    
+    {#if !$empty}
+        <button
+            name="delete"
+            value="delete"
+            on:click={(e) => !confirm('Are you sure?') && e.preventDefault()}
+            class="danger">Delete Note</button><br><br>
+        {/if}
 </form>
 
 <h3>Notes</h3>
